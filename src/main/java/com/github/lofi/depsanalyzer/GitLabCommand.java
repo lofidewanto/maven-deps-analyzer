@@ -5,7 +5,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -16,6 +19,7 @@ import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
+import org.apache.maven.shared.invoker.InvocationOutputHandler;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.shell.standard.ShellComponent;
@@ -84,6 +88,58 @@ public class GitLabCommand {
             return executeMavenDependencyTree(extractDirectory + "/" + zipFileName);
         } catch (Exception e) {
             return "Error processing the ZIP file: " + e.getMessage();
+        }
+    }
+
+    @ShellMethod(key = "list-licenses", value = "List licenses of Maven dependencies from a ZIP file with pom.xml.")
+    public String listDependencyLicenses(@ShellOption(value = "--zipfile") String zipFilePath,
+            @ShellOption(value = "--directory") String extractDirectory,
+            @ShellOption(value = "--output", defaultValue = "") String outputFilePath) {
+        try {
+            File destDir = new File(extractDirectory);
+            unzip(new File(zipFilePath), destDir);
+
+            String zipFileName = getZipFileName(zipFilePath);
+
+            String result = executeMavenLicenseList(extractDirectory + "/" + zipFileName);
+
+            if (!outputFilePath.isEmpty()) {
+                saveToFile(result, outputFilePath);
+                return "Licenses successfully listed and saved to: " + outputFilePath;
+            }
+
+            return result;
+        } catch (Exception e) {
+            return "Error retrieving Maven dependency licenses: " + e.getMessage();
+        }
+    }
+
+    private void saveToFile(String content, String filePath) throws IOException {
+        Path path = Paths.get(filePath);
+        Files.write(path, content.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    private String executeMavenLicenseList(String directory) throws MavenInvocationException {
+        InvocationRequest request = new DefaultInvocationRequest();
+        request.setPomFile(new File(directory, "pom.xml"));
+        request.setGoals(Collections.singletonList("license:aggregate-add-third-party"));
+
+        StringBuilder output = new StringBuilder();
+        Invoker invoker = new DefaultInvoker();
+        invoker.setMavenHome(new File(System.getenv("MAVEN_HOME")));
+        invoker.setOutputHandler(new InvocationOutputHandler() {
+            @Override
+            public void consumeLine(String line) {
+                output.append(line).append("\n");
+            }
+        });
+
+        InvocationResult result = invoker.execute(request);
+
+        if (result.getExitCode() == 0) {
+            return output.toString();
+        } else {
+            return "Error retrieving Maven dependency licenses.";
         }
     }
 
