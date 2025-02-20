@@ -29,7 +29,6 @@ To start the Spring Shell CLI, run the following command:
 mvn spring-boot:run
 ```
 
-
 ## Usage
 
 ### Clone a GitLab Repository
@@ -60,6 +59,51 @@ list-dependencies-dir --directory <local-directory>
 
 ```sh
 list-dependencies-zip --directory <target-directory> --zipfile <zip-file-name>
+```
+
+
+## Alternatively, you can run the CLI directly using the Java command line:
+
+```sh
+java -jar target/maven-deps-analyzer-<version>.jar
+```
+
+Replace `<version>` with the appropriate version number of the built JAR file.
+
+### To run specific commands using the `java -jar` command, use the following format:
+
+```sh
+java -jar target/maven-deps-analyzer-<version>.jar <command> [options]
+```
+
+For example, to clone a GitLab repository:
+
+```sh
+java -jar target/maven-deps-analyzer-<version>.jar clone --url <repository-url> --directory <local-directory>
+```
+
+To list branches of a local repository:
+
+```sh
+java -jar target/maven-deps-analyzer-<version>.jar list-branches --directory <local-directory>
+```
+
+To list commits of a branch:
+
+```sh
+java -jar target/maven-deps-analyzer-<version>.jar list-commits --directory <local-directory> --branch <branch-name>
+```
+
+To list Maven dependencies from a directory:
+
+```sh
+java -jar target/maven-deps-analyzer-<version>.jar list-dependencies-dir --directory <local-directory>
+```
+
+To list Maven dependencies from a ZIP file:
+
+```sh
+java -jar target/maven-deps-analyzer-<version>.jar list-dependencies-zip --directory <target-directory> --zipfile <zip-file-name>
 ```
 
 
