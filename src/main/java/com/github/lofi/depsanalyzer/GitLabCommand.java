@@ -122,7 +122,7 @@ public class GitLabCommand {
     private String executeMavenLicenseList(String directory) throws MavenInvocationException {
         InvocationRequest request = new DefaultInvocationRequest();
         request.setPomFile(new File(directory, "pom.xml"));
-        request.setGoals(Collections.singletonList("license:aggregate-add-third-party"));
+        request.setGoals(Collections.singletonList("license:add-third-party"));
 
         StringBuilder output = new StringBuilder();
         Invoker invoker = new DefaultInvoker();
