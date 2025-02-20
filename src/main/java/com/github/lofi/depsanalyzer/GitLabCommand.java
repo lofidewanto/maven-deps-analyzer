@@ -91,10 +91,10 @@ public class GitLabCommand {
         }
     }
 
-    @ShellMethod(key = "list-licenses", value = "List licenses of Maven dependencies from a ZIP file with pom.xml.")
+    @ShellMethod(key = "list-licenses-zip", value = "List licenses of Maven dependencies from a ZIP file with pom.xml.")
     public String listDependencyLicenses(@ShellOption(value = "--zipfile") String zipFilePath,
             @ShellOption(value = "--directory") String extractDirectory,
-            @ShellOption(value = "--output", defaultValue = "") String outputFilePath) {
+            @ShellOption(value = "--output", defaultValue = "license.txt") String outputFilePath) {
         try {
             File destDir = new File(extractDirectory);
             unzip(new File(zipFilePath), destDir);
