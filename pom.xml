@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.github.lofi</groupId>
 	<artifactId>maven-deps-analyzer</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>maven-deps-analyzer</name>
 	<description>Maven Deps Analyzer</description>
 
