@@ -74,7 +74,7 @@ public class MavenCommand {
 
             if (!outputFilePath.isEmpty()) {
                 saveToFile(result, outputFilePath);
-                logger.info("Licenses successfully listed and saved to: {}", outputFilePath);
+                logger.info("Maven successfully executed and the result of Maven is saved to: {}", outputFilePath);
             }
 
             String resultFilePath = extractFilePathFromResult(result);
@@ -106,7 +106,8 @@ public class MavenCommand {
         invoker.setMavenHome(new File(System.getenv("MAVEN_HOME")));
         invoker.setWorkingDirectory(pomFile.getParentFile());
 
-        logger.info("Executing Maven license:add-third-party for project in directory: {}", directory);
+        logger.info("Executing Maven license:add-third-party for project in directory: {}", 
+            pomFile.getParentFile().getAbsolutePath());
         
         invoker.setOutputHandler(new InvocationOutputHandler() {
             @Override
@@ -139,7 +140,8 @@ public class MavenCommand {
         invoker.setMavenHome(new File(System.getenv("MAVEN_HOME")));
         invoker.setWorkingDirectory(pomFile.getParentFile());
 
-        logger.info("Executing Maven dependency:tree for project in directory: {}", directory);
+        logger.info("Executing Maven dependency:tree for project in directory: {}", 
+            pomFile.getParentFile().getAbsolutePath());
 
         InvocationResult result = invoker.execute(request);
 
@@ -156,6 +158,18 @@ public class MavenCommand {
     }
 
     File findPomFileRecursively(File directory) {
+        // Check for directories starting with "build" (case-insensitive)
+        File[] buildDirs = directory.listFiles((dir, name) -> name.toLowerCase().startsWith("build"));
+        if (buildDirs != null) {
+            for (File buildDir : buildDirs) {
+                File pomFile = new File(buildDir, "pom.xml");
+                if (pomFile.exists()) {
+                    return pomFile;
+                }
+            }
+        }
+
+        // If no "build" directories found, search everywhere
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {

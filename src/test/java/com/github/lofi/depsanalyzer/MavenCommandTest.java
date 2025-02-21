@@ -89,4 +89,63 @@ class MavenCommandTest {
         String actual = mavenCommand.extractFilePathFromResult(result);
         assertNull(actual);
     }
+
+    @Test
+    void find_pom_file_recursively_in_build_directory() throws IOException {
+        // Setup
+        Path tempDir = Files.createTempDirectory("testDir");
+        Path buildDir = Files.createDirectory(tempDir.resolve("Build_App"));
+        Path pomFile = Files.createFile(buildDir.resolve("pom.xml"));
+
+        // Execute
+        File result = mavenCommand.findPomFileRecursively(tempDir.toFile());
+
+        // Verify
+        assertNotNull(result);
+        assertEquals(pomFile.toFile(), result);
+
+        // Cleanup
+        Files.deleteIfExists(pomFile);
+        Files.deleteIfExists(buildDir);
+        Files.deleteIfExists(tempDir);
+    }
+
+    @Test
+    void find_pom_file_recursively_in_nested_directory() throws IOException {
+        // Setup
+        Path tempDir = Files.createTempDirectory("testDir");
+        Path nestedDir = Files.createDirectory(tempDir.resolve("nested"));
+        Path pomFile = Files.createFile(nestedDir.resolve("pom.xml"));
+
+        MavenCommand mavenCommand = new MavenCommand();
+
+        // Execute
+        File result = mavenCommand.findPomFileRecursively(tempDir.toFile());
+
+        // Verify
+        assertNotNull(result);
+        assertEquals(pomFile.toFile(), result);
+
+        // Cleanup
+        Files.deleteIfExists(pomFile);
+        Files.deleteIfExists(nestedDir);
+        Files.deleteIfExists(tempDir);
+    }
+
+    @Test
+    void find_pom_file_recursively_no_pom_file() throws IOException {
+        // Setup
+        Path tempDir = Files.createTempDirectory("testDir");
+
+        MavenCommand mavenCommand = new MavenCommand();
+
+        // Execute
+        File result = mavenCommand.findPomFileRecursively(tempDir.toFile());
+
+        // Verify
+        assertNull(result);
+
+        // Cleanup
+        Files.deleteIfExists(tempDir);
+    }
 }
