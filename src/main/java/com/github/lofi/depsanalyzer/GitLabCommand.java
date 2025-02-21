@@ -25,20 +25,27 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ShellComponent
 public class GitLabCommand {
+
+    private static final Logger logger = LoggerFactory.getLogger(GitLabCommand.class);
 
     @ShellMethod(key = "clone", value = "Clone a GitLab repository.")
     public String cloneRepo(@ShellOption(value = "--url") String repoUrl,
             @ShellOption(value = "--directory") String directory) {
         try {
+            logger.info("Cloning repository from URL: {}", repoUrl);
             Git.cloneRepository()
                     .setURI(repoUrl)
                     .setDirectory(new File(directory))
                     .call();
+            logger.info("Repository successfully cloned to: {}", directory);
             return "Repository successfully cloned to: " + directory;
         } catch (GitAPIException e) {
+            logger.error("Error cloning the repository: {}", e.getMessage(), e);
             return "Error cloning the repository: " + e.getMessage();
         }
     }
@@ -46,10 +53,12 @@ public class GitLabCommand {
     @ShellMethod(key = "list-branches", value = "List all branches of a local repository.")
     public String listBranches(@ShellOption(value = "--directory") String directory) {
         try (Git git = Git.open(new File(directory))) {
+            logger.info("Listing branches for repository in directory: {}", directory);
             StringBuilder branches = new StringBuilder();
             git.branchList().call().forEach(ref -> branches.append(ref.getName()).append("\n"));
             return branches.toString();
         } catch (Exception e) {
+            logger.error("Error listing branches: {}", e.getMessage(), e);
             return "Error listing branches: " + e.getMessage();
         }
     }
@@ -58,11 +67,13 @@ public class GitLabCommand {
     public String listCommits(@ShellOption(value = "--directory") String directory,
             @ShellOption(value = "--branch") String branch) {
         try (Git git = Git.open(new File(directory))) {
+            logger.info("Listing commits for branch: {} in directory: {}", branch, directory);
             StringBuilder commits = new StringBuilder();
             git.log().add(git.getRepository().resolve(branch)).call()
                     .forEach(commit -> commits.append(commit.getFullMessage()).append("\n"));
             return commits.toString();
         } catch (Exception e) {
+            logger.error("Error listing commits: {}", e.getMessage(), e);
             return "Error listing commits: " + e.getMessage();
         }
     }
@@ -70,8 +81,10 @@ public class GitLabCommand {
     @ShellMethod(key = "list-dependencies-dir", value = "List Maven dependencies of a project in a directory from the pom.xml.")
     public String listDependenciesFromDirectory(@ShellOption(value = "--directory") String directory) {
         try {
+            logger.info("Listing dependencies for project in directory: {}", directory);
             return executeMavenDependencyTree(directory);
         } catch (Exception e) {
+            logger.error("Error retrieving Maven dependencies: {}", e.getMessage(), e);
             return "Error retrieving Maven dependencies: " + e.getMessage();
         }
     }
@@ -80,6 +93,7 @@ public class GitLabCommand {
     public String listDependenciesFromZip(@ShellOption(value = "--zipfile") String zipFilePath,
             @ShellOption(value = "--directory") String extractDirectory) {
         try {
+            logger.info("Listing dependencies from ZIP file: {} into directory: {}", zipFilePath, extractDirectory);
             File destDir = new File(extractDirectory);
             unzip(new File(zipFilePath), destDir);
 
@@ -87,29 +101,38 @@ public class GitLabCommand {
 
             return executeMavenDependencyTree(extractDirectory + "/" + zipFileName);
         } catch (Exception e) {
+            logger.error("Error processing the ZIP file: {}", e.getMessage(), e);
             return "Error processing the ZIP file: " + e.getMessage();
         }
     }
 
     @ShellMethod(key = "list-licenses-zip", value = "List licenses of Maven dependencies from a ZIP file with pom.xml.")
     public String listDependencyLicenses(@ShellOption(value = "--zipfile") String zipFilePath,
-            @ShellOption(value = "--directory") String extractDirectory,
-            @ShellOption(value = "--output", defaultValue = "license.txt") String outputFilePath) {
+            @ShellOption(value = "--directory") String extractDirectory) {
         try {
+            logger.info("Listing licenses from ZIP file: {} into directory: {}", zipFilePath, extractDirectory);
             File destDir = new File(extractDirectory);
             unzip(new File(zipFilePath), destDir);
 
             String zipFileName = getZipFileName(zipFilePath);
+            String outputFilePath = extractDirectory + "/" + zipFileName + ".txt";
 
             String result = executeMavenLicenseList(extractDirectory + "/" + zipFileName);
 
             if (!outputFilePath.isEmpty()) {
                 saveToFile(result, outputFilePath);
-                return "Licenses successfully listed and saved to: " + outputFilePath;
+                logger.info("Licenses successfully listed and saved to: {}", outputFilePath);
             }
 
-            return result;
+            String resultFilePath = extractFilePathFromResult(result);
+
+            Files.copy(Paths.get(resultFilePath), Paths.get(extractDirectory + "/" + zipFileName + "-result.txt"), 
+                StandardCopyOption.REPLACE_EXISTING);
+            logger.info("Result file copied to: {}", extractDirectory + "/" + zipFileName + "-result.txt");
+
+            return "Licenses successfully listed and saved to: " + outputFilePath;
         } catch (Exception e) {
+            logger.error("Error retrieving Maven dependency licenses: {}", e.getMessage(), e);
             return "Error retrieving Maven dependency licenses: " + e.getMessage();
         }
     }
@@ -132,6 +155,10 @@ public class GitLabCommand {
         StringBuilder output = new StringBuilder();
         Invoker invoker = new DefaultInvoker();
         invoker.setMavenHome(new File(System.getenv("MAVEN_HOME")));
+        invoker.setWorkingDirectory(pomFile.getParentFile());
+
+        logger.info("Executing Maven license:add-third-party for project in directory: {}", directory);
+        
         invoker.setOutputHandler(new InvocationOutputHandler() {
             @Override
             public void consumeLine(String line) {
@@ -144,7 +171,7 @@ public class GitLabCommand {
         if (result.getExitCode() == 0) {
             return output.toString();
         } else {
-            return "Error retrieving Maven dependency licenses.";
+            return "Error retrieving Maven dependency licenses: " + output.toString();
         }
     }
 
@@ -190,11 +217,21 @@ public class GitLabCommand {
 
     private String executeMavenDependencyTree(String directory) throws MavenInvocationException {
         InvocationRequest request = new DefaultInvocationRequest();
-        request.setPomFile(new File(directory, "pom.xml"));
+
+        File pomFile = new File(directory, "pom.xml");
+        if (!pomFile.exists()) {
+            pomFile = findPomFileRecursively(new File(directory));
+        }
+        request.setPomFile(pomFile);
+        
         request.setGoals(Collections.singletonList("dependency:tree"));
 
         Invoker invoker = new DefaultInvoker();
         invoker.setMavenHome(new File(System.getenv("MAVEN_HOME")));
+        invoker.setWorkingDirectory(pomFile.getParentFile());
+
+        logger.info("Executing Maven dependency:tree for project in directory: {}", directory);
+
         InvocationResult result = invoker.execute(request);
 
         if (result.getExitCode() == 0) {
@@ -202,5 +239,17 @@ public class GitLabCommand {
         } else {
             return "Error retrieving Maven dependencies.";
         }
+    }
+
+    String extractFilePathFromResult(String result) {
+        String searchString = "Writing third-party file to: ";
+        int startIndex = result.indexOf(searchString);
+        if (startIndex != -1) {
+            int endIndex = result.indexOf("\n", startIndex);
+            if (endIndex != -1) {
+                return result.substring(startIndex + searchString.length(), endIndex).trim();
+            }
+        }
+        return null;
     }
 }
