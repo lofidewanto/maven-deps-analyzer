@@ -120,8 +120,13 @@ public class GitLabCommand {
     }
 
     private String executeMavenLicenseList(String directory) throws MavenInvocationException {
+        File pomFile = new File(directory, "pom.xml");
+        if (!pomFile.exists()) {
+            pomFile = findPomFileRecursively(new File(directory));
+        }
+
         InvocationRequest request = new DefaultInvocationRequest();
-        request.setPomFile(new File(directory, "pom.xml"));
+        request.setPomFile(pomFile);
         request.setGoals(Collections.singletonList("license:add-third-party"));
 
         StringBuilder output = new StringBuilder();
@@ -141,6 +146,23 @@ public class GitLabCommand {
         } else {
             return "Error retrieving Maven dependency licenses.";
         }
+    }
+
+    File findPomFileRecursively(File directory) {
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    File pomFile = findPomFileRecursively(file);
+                    if (pomFile != null) {
+                        return pomFile;
+                    }
+                } else if (file.getName().equals("pom.xml")) {
+                    return file;
+                }
+            }
+        }
+        return null;
     }
 
     String getZipFileName(String zipFilePath) {
