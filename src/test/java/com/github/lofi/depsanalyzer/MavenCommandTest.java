@@ -11,20 +11,20 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-class GitLabCommandTest {
+class MavenCommandTest {
 
-    private GitLabCommand gitLabCommand;
+    private MavenCommand mavenCommand;
 
     @BeforeEach
     void setUp() {
-        gitLabCommand = new GitLabCommand();
+        mavenCommand = new MavenCommand();
     }
 
     @Test
     void get_zip_file_name() {
         String zipFilePath = "target/repo.zip";
 
-        String result = gitLabCommand.getZipFileName(zipFilePath);
+        String result = mavenCommand.getZipFileName(zipFilePath);
 
         assertEquals("repo", result);
     }
@@ -34,7 +34,7 @@ class GitLabCommandTest {
         Path tempDir = Files.createTempDirectory("testDir");
         Path pomFile = Files.createFile(tempDir.resolve("pom.xml"));
 
-        File result = gitLabCommand.findPomFileRecursively(tempDir.toFile());
+        File result = mavenCommand.findPomFileRecursively(tempDir.toFile());
 
         assertNotNull(result);
 
@@ -46,7 +46,7 @@ class GitLabCommandTest {
     void find_pom_file_recursively_without_pom_file() throws IOException {
         Path tempDir = Files.createTempDirectory("testDir");
 
-        File result = gitLabCommand.findPomFileRecursively(tempDir.toFile());
+        File result = mavenCommand.findPomFileRecursively(tempDir.toFile());
 
         assertNull(result);
 
@@ -59,7 +59,7 @@ class GitLabCommandTest {
         Path subDir = Files.createDirectory(tempDir.resolve("subDir"));
         Path pomFile = Files.createFile(subDir.resolve("pom.xml"));
 
-        File result = gitLabCommand.findPomFileRecursively(tempDir.toFile());
+        File result = mavenCommand.findPomFileRecursively(tempDir.toFile());
 
         assertNotNull(result);
         
