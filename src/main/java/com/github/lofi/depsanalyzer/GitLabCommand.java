@@ -137,11 +137,6 @@ public class GitLabCommand {
         }
     }
 
-    private void saveToFile(String content, String filePath) throws IOException {
-        Path path = Paths.get(filePath);
-        Files.write(path, content.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-    }
-
     private String executeMavenLicenseList(String directory) throws MavenInvocationException {
         File pomFile = new File(directory, "pom.xml");
         if (!pomFile.exists()) {
@@ -175,46 +170,6 @@ public class GitLabCommand {
         }
     }
 
-    File findPomFileRecursively(File directory) {
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    File pomFile = findPomFileRecursively(file);
-                    if (pomFile != null) {
-                        return pomFile;
-                    }
-                } else if (file.getName().equals("pom.xml")) {
-                    return file;
-                }
-            }
-        }
-        return null;
-    }
-
-    String getZipFileName(String zipFilePath) {
-        // Get the name of the zip file from the zipFilePath without the extension
-        String zipFileName = zipFilePath.substring(zipFilePath.lastIndexOf('/') + 1, zipFilePath.lastIndexOf('.'));
-        return zipFileName;
-    }
-
-    private void unzip(File zipFile, File destDir) throws IOException {
-        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipFile))) {
-            ZipEntry entry;
-            while ((entry = zipInputStream.getNextEntry()) != null) {
-                File newFile = new File(destDir, entry.getName());
-                if (entry.isDirectory()) {
-                    newFile.mkdirs();
-                } else {
-                    newFile.getParentFile().mkdirs();
-                    try (FileOutputStream fos = new FileOutputStream(newFile)) {
-                        Files.copy(zipInputStream, newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    }
-                }
-            }
-        }
-    }
-
     private String executeMavenDependencyTree(String directory) throws MavenInvocationException {
         InvocationRequest request = new DefaultInvocationRequest();
 
@@ -238,6 +193,51 @@ public class GitLabCommand {
             return "Maven dependencies successfully listed.";
         } else {
             return "Error retrieving Maven dependencies.";
+        }
+    }
+
+    void saveToFile(String content, String filePath) throws IOException {
+        Path path = Paths.get(filePath);
+        Files.write(path, content.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+    }
+
+    File findPomFileRecursively(File directory) {
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    File pomFile = findPomFileRecursively(file);
+                    if (pomFile != null) {
+                        return pomFile;
+                    }
+                } else if (file.getName().equals("pom.xml")) {
+                    return file;
+                }
+            }
+        }
+        return null;
+    }
+
+    String getZipFileName(String zipFilePath) {
+        // Get the name of the zip file from the zipFilePath without the extension
+        String zipFileName = zipFilePath.substring(zipFilePath.lastIndexOf('/') + 1, zipFilePath.lastIndexOf('.'));
+        return zipFileName;
+    }
+
+    void unzip(File zipFile, File destDir) throws IOException {
+        try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(zipFile))) {
+            ZipEntry entry;
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                File newFile = new File(destDir, entry.getName());
+                if (entry.isDirectory()) {
+                    newFile.mkdirs();
+                } else {
+                    newFile.getParentFile().mkdirs();
+                    try (FileOutputStream fos = new FileOutputStream(newFile)) {
+                        Files.copy(zipInputStream, newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            }
         }
     }
 
