@@ -67,4 +67,26 @@ class MavenCommandTest {
         Files.deleteIfExists(subDir);
         Files.deleteIfExists(tempDir);
     }
+
+    @Test
+    void extract_file_path_from_result_valid_result() {
+        String result = "Some log output\nWriting third-party file to: /path/to/third-party-file.txt\nMore log output";
+        String expected = "/path/to/third-party-file.txt";
+        String actual = mavenCommand.extractFilePathFromResult(result);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void extract_file_path_from_result_no_match() {
+        String result = "Some log output\nNo matching line here\nMore log output";
+        String actual = mavenCommand.extractFilePathFromResult(result);
+        assertNull(actual);
+    }
+
+    @Test
+    void extract_file_path_from_result_empty_result() {
+        String result = "";
+        String actual = mavenCommand.extractFilePathFromResult(result);
+        assertNull(actual);
+    }
 }

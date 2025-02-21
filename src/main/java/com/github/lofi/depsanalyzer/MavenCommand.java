@@ -79,6 +79,7 @@ public class MavenCommand {
 
             String resultFilePath = extractFilePathFromResult(result);
 
+            // Copy the last result
             Files.copy(Paths.get(resultFilePath), Paths.get(extractDirectory + "/" + zipFileName + "-result.txt"), 
                 StandardCopyOption.REPLACE_EXISTING);
             logger.info("Result file copied to: {}", extractDirectory + "/" + zipFileName + "-result.txt");
