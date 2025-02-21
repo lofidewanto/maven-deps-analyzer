@@ -68,7 +68,7 @@ public class MavenCommand {
             unzip(new File(zipFilePath), destDir);
 
             String zipFileName = getZipFileName(zipFilePath);
-            String outputFilePath = extractDirectory + "/" + zipFileName + ".txt";
+            String outputFilePath = extractDirectory + "/" + zipFileName + "-maven.txt";
 
             String result = executeMavenLicenseList(extractDirectory + "/" + zipFileName);
 
@@ -80,11 +80,12 @@ public class MavenCommand {
             String resultFilePath = extractFilePathFromResult(result);
 
             // Copy the last result
-            Files.copy(Paths.get(resultFilePath), Paths.get(extractDirectory + "/" + zipFileName + "-result.txt"), 
+            String extractFilename = extractDirectory + "/" + zipFileName + "-licenses.txt";
+            Files.copy(Paths.get(resultFilePath), Paths.get(extractFilename), 
                 StandardCopyOption.REPLACE_EXISTING);
-            logger.info("Result file copied to: {}", extractDirectory + "/" + zipFileName + "-result.txt");
+            logger.info("Result file copied from: {} to: {}}", resultFilePath, extractFilename);
 
-            return "Licenses successfully listed and saved to: " + outputFilePath;
+            return "Licenses successfully listed and saved to: " + extractFilename;
         } catch (Exception e) {
             logger.error("Error retrieving Maven dependency licenses: {}", e.getMessage(), e);
             return "Error retrieving Maven dependency licenses: " + e.getMessage();
@@ -211,7 +212,7 @@ public class MavenCommand {
 
     String extractFilePathFromResult(String result) {
         String searchString = "Writing third-party file to ";
-        int startIndex = result.indexOf(searchString);
+        int startIndex = result.lastIndexOf(searchString);
         if (startIndex != -1) {
             int endIndex = result.indexOf("\n", startIndex);
             if (endIndex != -1) {
