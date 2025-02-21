@@ -188,4 +188,32 @@ class MavenCommandTest {
         // Cleanup
         Files.deleteIfExists(tempDir);
     }
+
+    @Test
+    void get_extracted_filename_standard_path() {
+        String result = mavenCommand.getExtractFilename(
+            "myproject", 
+            "/Users/myuser/Downloads/project-1.0.0/module-1.0.0/target/generated-sources/license/THIRD-PARTY.txt"
+        );
+        assertEquals("myproject-licenses-module-1.0.0.txt", result);
+    }
+
+    @Test
+    void get_extracted_filename_multiple_targets() {
+        String result = mavenCommand.getExtractFilename(
+            "myproject", 
+            "/path/to/module-2.0.0/target/something/target/THIRD-PARTY.txt"
+        );
+        assertEquals("myproject-licenses-module-2.0.0.txt", result);
+    }
+
+    @Test
+    void get_extracted_filename_simple_path() {
+        String result = mavenCommand.getExtractFilename(
+            "myproject", 
+            "/simple-module/target/THIRD-PARTY.txt"
+        );
+        assertEquals("myproject-licenses-simple-module.txt", result);
+    }
+
 }

@@ -83,10 +83,14 @@ public class MavenCommand {
             // Process each found license file
             int fileCount = 0;
             for (String resultFilePath : resultFilePaths) {
-                String extractFilename = extractDirectory + "/" + zipFileName + "-licenses-" + (++fileCount) + ".txt";
-                Files.copy(Paths.get(resultFilePath), Paths.get(extractFilename), 
-                    StandardCopyOption.REPLACE_EXISTING);
-                logger.info("Result file copied from: {} to: {}", resultFilePath, extractFilename);
+                fileCount++;
+
+                String extractFilename = getExtractFilename(zipFileName, resultFilePath);
+                
+                Files.copy(Paths.get(resultFilePath), Paths.get(extractDirectory + "/" + 
+                    extractFilename), StandardCopyOption.REPLACE_EXISTING);
+                
+                    logger.info("Result file copied from: {} to: {}", resultFilePath, extractFilename);
             }
 
             return String.format("Licenses successfully listed and saved %d files to: %s", 
@@ -158,6 +162,17 @@ public class MavenCommand {
         }
     }
 
+    String getExtractFilename(String zipFileName, String resultFilePath) {
+        // Get the project name from the result file path
+        // Example: /Users/myuser/Downloads/project-1.0.0/module-1.0.0/target/generated-sources/license/THIRD-PARTY.txt
+        String[] pathParts = resultFilePath.split("/target/");
+        String beforeTarget = pathParts[0];
+        String projectName = beforeTarget.substring(beforeTarget.lastIndexOf('/') + 1);
+        
+        String extractFilename = zipFileName + "-licenses-" + projectName + ".txt";
+        return extractFilename;
+    }
+    
     void saveToFile(String content, String filePath) throws IOException {
         Path path = Paths.get(filePath);
         Files.write(path, content.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
