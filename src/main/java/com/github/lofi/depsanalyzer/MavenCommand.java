@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 @ShellComponent
 public class MavenCommand {
 
-    private static final Logger logger = LoggerFactory.getLogger(GitLabCommand.class);
+    private static final Logger logger = LoggerFactory.getLogger(MavenCommand.class);
 
     @ShellMethod(key = "list-dependencies-dir", value = "List Maven dependencies of a project in a directory from the pom.xml.")
     public String listDependenciesFromDirectory(@ShellOption(value = "--directory") String directory) {

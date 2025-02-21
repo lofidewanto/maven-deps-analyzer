@@ -29,9 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ShellComponent
-public class GitLabCommand {
+public class GitlabCommand {
 
-    private static final Logger logger = LoggerFactory.getLogger(GitLabCommand.class);
+    private static final Logger logger = LoggerFactory.getLogger(GitlabCommand.class);
 
     @ShellMethod(key = "clone", value = "Clone a GitLab repository.")
     public String cloneRepo(@ShellOption(value = "--url") String repoUrl,
