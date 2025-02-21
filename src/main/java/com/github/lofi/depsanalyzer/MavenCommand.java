@@ -196,12 +196,14 @@ public class MavenCommand {
     }
 
     String extractFilePathFromResult(String result) {
-        String searchString = "Writing third-party file to: ";
+        String searchString = "Writing third-party file to ";
         int startIndex = result.indexOf(searchString);
         if (startIndex != -1) {
             int endIndex = result.indexOf("\n", startIndex);
             if (endIndex != -1) {
                 return result.substring(startIndex + searchString.length(), endIndex).trim();
+            } else {
+                return result.substring(startIndex + searchString.length()).trim();
             }
         }
         return null;

@@ -70,7 +70,7 @@ class MavenCommandTest {
 
     @Test
     void extract_file_path_from_result_valid_result() {
-        String result = "Some log output\nWriting third-party file to: /path/to/third-party-file.txt\nMore log output";
+        String result = "[INFO] Writing third-party file to /path/to/third-party-file.txt";
         String expected = "/path/to/third-party-file.txt";
         String actual = mavenCommand.extractFilePathFromResult(result);
         assertEquals(expected, actual);
