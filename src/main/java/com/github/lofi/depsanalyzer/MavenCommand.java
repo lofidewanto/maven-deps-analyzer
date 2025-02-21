@@ -12,6 +12,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.ArrayList;
 
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
@@ -77,15 +78,19 @@ public class MavenCommand {
                 logger.info("Maven successfully executed and the result of Maven is saved to: {}", outputFilePath);
             }
 
-            String resultFilePath = extractFilePathFromResult(result);
+            ArrayList<String> resultFilePaths = extractFilePathFromResult(result);
+            
+            // Process each found license file
+            int fileCount = 0;
+            for (String resultFilePath : resultFilePaths) {
+                String extractFilename = extractDirectory + "/" + zipFileName + "-licenses-" + (++fileCount) + ".txt";
+                Files.copy(Paths.get(resultFilePath), Paths.get(extractFilename), 
+                    StandardCopyOption.REPLACE_EXISTING);
+                logger.info("Result file copied from: {} to: {}", resultFilePath, extractFilename);
+            }
 
-            // Copy the last result
-            String extractFilename = extractDirectory + "/" + zipFileName + "-licenses.txt";
-            Files.copy(Paths.get(resultFilePath), Paths.get(extractFilename), 
-                StandardCopyOption.REPLACE_EXISTING);
-            logger.info("Result file copied from: {} to: {}}", resultFilePath, extractFilename);
-
-            return "Licenses successfully listed and saved to: " + extractFilename;
+            return String.format("Licenses successfully listed and saved %d files to: %s", 
+                fileCount, extractDirectory);
         } catch (Exception e) {
             logger.error("Error retrieving Maven dependency licenses: {}", e.getMessage(), e);
             return "Error retrieving Maven dependency licenses: " + e.getMessage();
@@ -210,17 +215,32 @@ public class MavenCommand {
         }
     }
 
-    String extractFilePathFromResult(String result) {
+    ArrayList<String> extractFilePathFromResult(String result) {
+        ArrayList<String> paths = new ArrayList<>();
         String searchString = "Writing third-party file to ";
-        int startIndex = result.lastIndexOf(searchString);
-        if (startIndex != -1) {
+        int lastIndex = 0;
+        
+        while ((lastIndex = result.indexOf(searchString, lastIndex)) != -1) {
+            int startIndex = lastIndex + searchString.length();
             int endIndex = result.indexOf("\n", startIndex);
-            if (endIndex != -1) {
-                return result.substring(startIndex + searchString.length(), endIndex).trim();
-            } else {
-                return result.substring(startIndex + searchString.length()).trim();
+            
+            if (endIndex == -1) {
+                // Handle case where this is the last line
+                String path = result.substring(startIndex).trim();
+                if (!path.isEmpty()) {
+                    paths.add(path);
+                }
+                break;
             }
+            
+            String path = result.substring(startIndex, endIndex).trim();
+            if (!path.isEmpty()) {
+                paths.add(path);
+            }
+            
+            lastIndex = endIndex;
         }
-        return null;
+        
+        return paths;
     }
 }

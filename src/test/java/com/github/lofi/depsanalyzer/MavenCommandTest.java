@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import java.util.ArrayList;
 
 class MavenCommandTest {
 
@@ -71,29 +72,62 @@ class MavenCommandTest {
     @Test
     void extract_file_path_from_result_valid_result() {
         String result = """
-            [INFO] Writing third-party file to /path/to/no-file.txt
-            [INFO] Writing third-party file to /path/to/no-file-lofi.txt
-            ...
-            ...
-            [INFO] Writing third-party file to /path/to/third-party-file.txt
+            [INFO] Writing third-party file to /path/to/file1.txt
+            [INFO] Writing third-party file to /path/to/file2.txt
+            [INFO] Writing third-party file to /path/to/file3.txt
             """;
-        String expected = "/path/to/third-party-file.txt";
-        String actual = mavenCommand.extractFilePathFromResult(result);
-        assertEquals(expected, actual);
+        
+        ArrayList<String> paths = mavenCommand.extractFilePathFromResult(result);
+        
+        assertEquals(3, paths.size());
+        assertEquals("/path/to/file1.txt", paths.get(0));
+        assertEquals("/path/to/file2.txt", paths.get(1));
+        assertEquals("/path/to/file3.txt", paths.get(2));
+    }
+
+    @Test
+    void extract_file_path_from_result_single_file() {
+        String result = "[INFO] Writing third-party file to /path/to/single-file.txt";
+        
+        ArrayList<String> paths = mavenCommand.extractFilePathFromResult(result);
+        
+        assertEquals(1, paths.size());
+        assertEquals("/path/to/single-file.txt", paths.get(0));
     }
 
     @Test
     void extract_file_path_from_result_no_match() {
         String result = "Some log output\nNo matching line here\nMore log output";
-        String actual = mavenCommand.extractFilePathFromResult(result);
-        assertNull(actual);
+        
+        ArrayList<String> paths = mavenCommand.extractFilePathFromResult(result);
+        
+        assertEquals(0, paths.size());
     }
 
     @Test
     void extract_file_path_from_result_empty_result() {
         String result = "";
-        String actual = mavenCommand.extractFilePathFromResult(result);
-        assertNull(actual);
+        
+        ArrayList<String> paths = mavenCommand.extractFilePathFromResult(result);
+        
+        assertEquals(0, paths.size());
+    }
+
+    @Test
+    void extract_file_path_from_result_with_mixed_content() {
+        String result = """
+            [INFO] Building project
+            [INFO] Writing third-party file to /path/to/file1.txt
+            [INFO] Some other log
+            [INFO] Writing third-party file to /path/to/file2.txt
+            [INFO] Build successful
+            """;
+        
+        ArrayList<String> paths = mavenCommand.extractFilePathFromResult(result);
+        
+        assertEquals(2, paths.size());
+        assertEquals("/path/to/file1.txt", paths.get(0));
+        assertEquals("/path/to/file2.txt", paths.get(1));
     }
 
     @Test
