@@ -29,37 +29,37 @@ To start the Spring Shell CLI with Maven, run the following command:
 mvn spring-boot:run
 ```
 
-### Clone a GitLab Repository
+Clone a GitLab Repository
 
 ```sh
 clone --url <repository-url> --directory <local-directory>
 ```
 
-### List Branches of a Local Repository
+List Branches of a Local Repository
 
 ```sh
 list-branches --directory <local-directory>
 ```
 
-### List Commits of a Branch
+List Commits of a Branch
 
 ```sh
 list-commits --directory <local-directory> --branch <branch-name>
 ```
 
-### List Maven Dependencies from a Directory
+List Maven Dependencies from a Directory
 
 ```sh
 list-dependencies-dir --directory <local-directory>
 ```
 
-### List Maven Dependencies from a ZIP File
+List Maven Dependencies from a ZIP File
 
 ```sh
 list-dependencies-zip --directory <target-directory> --zipfile <zip-file-name>
 ```
 
-### List Maven Licenses from a ZIP File
+List Maven Licenses from a ZIP File
 
 ```sh
 list-licenses-zip --directory <target-directory> --zipfile <zip-file-name>
