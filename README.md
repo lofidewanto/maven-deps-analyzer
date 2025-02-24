@@ -59,7 +59,7 @@ list-dependencies-dir --directory <local-directory>
 list-dependencies-zip --directory <target-directory> --zipfile <zip-file-name>
 ```
 
-### List licenses from a ZIP File
+### List Maven Licenses from a ZIP File
 
 ```sh
 list-licenses-zip --directory <target-directory> --zipfile <zip-file-name>
@@ -111,7 +111,7 @@ To list Maven dependencies from a ZIP file:
 java -jar target/maven-deps-analyzer-<version>.jar list-dependencies-zip --directory <target-directory> --zipfile <zip-file-name>
 ```
 
-To list licenses from a ZIP file:
+To list Maven licenses from a ZIP file:
 
 ```sh
 java -jar target/maven-deps-analyzer-<version>.jar list-licenses-zip --directory <target-directory> --zipfile <zip-file-name>
