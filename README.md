@@ -23,13 +23,15 @@ This project provides a command-line tool to interact with GitLab repositories a
 
 ## Running the CLI
 
-To start the Spring Shell CLI, run the following command:
+**You need to have at least Java 17 and Maven 3.9.x installed correctly in your working PC.**
+
+## (1) Start Spring Shell CLI with Maven
+
+To start the Spring Shell CLI with Maven, run the following command:
 
 ```sh
 mvn spring-boot:run
 ```
-
-## Usage
 
 ### Clone a GitLab Repository
 
@@ -62,13 +64,16 @@ list-dependencies-zip --directory <target-directory> --zipfile <zip-file-name>
 ```
 
 
-## Alternatively, you can run the CLI directly using the Java command line:
+## (2) Start Spring Shell CLI with Java command line
 
 ```sh
 java -jar target/maven-deps-analyzer-<version>.jar
 ```
 
 Replace `<version>` with the appropriate version number of the built JAR file.
+
+
+## (3) Start directly with Java command line with specific command
 
 ### To run specific commands using the `java -jar` command, use the following format:
 
