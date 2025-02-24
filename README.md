@@ -11,7 +11,7 @@ This project provides a command-line tool to interact with Git repositories and 
     cd maven-deps-analyzer
     ```
 
-. Build the project:
+2. Build the project:
 
     ```sh
     ./mvnw clean package
