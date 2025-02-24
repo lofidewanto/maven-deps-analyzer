@@ -1,31 +1,27 @@
 # Maven Dependencies Analyzer
-This project provides a command-line tool to interact with GitLab repositories and analyze Maven dependencies.
 
+This project provides a command-line tool to interact with Git repositories and analyze Maven dependencies.
 
 ## Setup
 
 1. Clone the repository:
+
     ```sh
     git clone <repository-url>
     cd maven-deps-analyzer
     ```
 
-2. Ensure you have Maven and Java installed. Set the `MAVEN_HOME` environment variable:
-    ```sh
-    export MAVEN_HOME=/path/to/your/maven
-    ```
+. Build the project:
 
-3. Build the project:
     ```sh
-    mvn clean install
+    ./mvnw clean package
     ```
-
 
 ## Running the CLI
 
-**You need to have at least Java 17 and Maven 3.9.x installed correctly in your working PC.**
+**You need at least Java 17 and Maven 3.9.x installed on your machine.**
 
-## (1) Start Spring Shell CLI with Maven
+### (1) Start Spring Shell CLI with Maven
 
 To start the Spring Shell CLI with Maven, run the following command:
 
@@ -63,8 +59,13 @@ list-dependencies-dir --directory <local-directory>
 list-dependencies-zip --directory <target-directory> --zipfile <zip-file-name>
 ```
 
+### List licenses from a ZIP File
 
-## (2) Start Spring Shell CLI with Java command line
+```sh
+list-licenses-zip --directory <target-directory> --zipfile <zip-file-name>
+```
+
+### (2) Start Spring Shell CLI with Java Command Line
 
 ```sh
 java -jar target/maven-deps-analyzer-<version>.jar
@@ -72,10 +73,9 @@ java -jar target/maven-deps-analyzer-<version>.jar
 
 Replace `<version>` with the appropriate version number of the built JAR file.
 
+### (3) Start Directly with Java Command Line Using a Specific Command
 
-## (3) Start directly with Java command line with specific command
-
-### To run specific commands using the `java -jar` command, use the following format:
+To run specific commands using the `java -jar` command, use the following format:
 
 ```sh
 java -jar target/maven-deps-analyzer-<version>.jar <command> [options]
@@ -111,6 +111,11 @@ To list Maven dependencies from a ZIP file:
 java -jar target/maven-deps-analyzer-<version>.jar list-dependencies-zip --directory <target-directory> --zipfile <zip-file-name>
 ```
 
+To list licenses from a ZIP file:
+
+```sh
+java -jar target/maven-deps-analyzer-<version>.jar list-licenses-zip --directory <target-directory> --zipfile <zip-file-name>
+```
 
 ## License
 
